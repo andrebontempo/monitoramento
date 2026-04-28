@@ -1,6 +1,6 @@
 # Resumo da Implementação: Observabilidade e Alertas VPS
 
-Este documento detalha o stack de monitoramento e alertas configurado para a VPS, garantindo visibilidade total sobre saúde dos containers, recursos do sistema e segurança.
+Este documento detalha o stack de monitoramento e alertas configurado para a VPS, garantindo visibilidade total sobre saúde dos containers, recursos do sistema e segurança.d
 
 ## 1. Stack de Tecnologias
 - **Métricas:** Prometheus + Node Exporter + cAdvisor.
