@@ -45,7 +45,7 @@ Implementamos um sistema de scan semanal automatizado.
 
 ---
 
-## 5. Comandos Úteis de Manutenção
+## 5. Comandos Úteis de Manutenção..
 
 ### Recarregar regras do Prometheus (sem restart):
 ```bash
