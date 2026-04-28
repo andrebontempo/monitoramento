@@ -1,0 +1,104 @@
+groups:
+  - name: containers
+    interval: 60s
+    rules:
+
+      # -------------------------------------------------------
+      # Container parado / não responde
+      # -------------------------------------------------------
+      - alert: ContainerDown
+        expr: |
+          (time() - container_last_seen{name!="", name!~".*POD.*", name!~".*pause.*"}) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔴 Container DOWN: {{ $labels.name }}"
+          description: "Container {{ $labels.name }} não é visto há mais de 2 minutos."
+
+      # -------------------------------------------------------
+      # CPU alta por container (> 80% por 5 min)
+      # -------------------------------------------------------
+      - alert: ContainerHighCPU
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{name!="", name!~".*POD.*"}[5m])) by (name) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ CPU alta: {{ $labels.name }}"
+          description: "Container {{ $labels.name }} está usando {{ $value | printf \"%.1f\" }}% de CPU há 5 minutos."
+
+      # -------------------------------------------------------
+      # Memória alta por container (> 85% do limite)
+      # -------------------------------------------------------
+      - alert: ContainerHighMemory
+        expr: |
+          (
+            container_memory_usage_bytes{name!="", name!~".*POD.*", name!~".*pause.*"}
+            / container_spec_memory_limit_bytes{name!="", name!~".*POD.*", name!~".*pause.*"}
+          ) * 100 > 85
+          and
+          container_spec_memory_limit_bytes{name!="", name!~".*POD.*", name!~".*pause.*"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Memória alta: {{ $labels.name }}"
+          description: "Container {{ $labels.name }} usando {{ $value | printf \"%.1f\" }}% da memória limite."
+
+  - name: host
+    interval: 60s
+    rules:
+
+      # -------------------------------------------------------
+      # CPU do host alta (> 80% por 5 min)
+      # -------------------------------------------------------
+      - alert: HostHighCPU
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ CPU do VPS alta"
+          description: "A CPU do host está em {{ $value | printf \"%.1f\" }}% há 5 minutos."
+
+      # -------------------------------------------------------
+      # Memória RAM baixa (< 15% livre)
+      # -------------------------------------------------------
+      - alert: HostLowMemory
+        expr: |
+          (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ RAM baixa no VPS"
+          description: "Apenas {{ $value | printf \"%.1f\" }}% de RAM livre no host."
+
+      # -------------------------------------------------------
+      # Disco baixo (< 15% livre na raiz)
+      # -------------------------------------------------------
+      - alert: HostLowDisk
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/", fstype!="tmpfs"}
+          / node_filesystem_size_bytes{mountpoint="/", fstype!="tmpfs"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Disco baixo no VPS"
+          description: "Apenas {{ $value | printf \"%.1f\" }}% de espaço livre em disco."
+
+      # -------------------------------------------------------
+      # Host inacessível (Node Exporter não responde)
+      # -------------------------------------------------------
+      - alert: HostDown
+        expr: up{job="node-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔴 VPS inacessível!"
+          description: "O Node Exporter não responde — o host pode estar fora do ar."

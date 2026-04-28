@@ -1,0 +1,43 @@
+# =============================================================
+# Adicionar ao docker-compose.yml em /opt/docker/monitoramento/
+# Insira os serviços abaixo e adicione os volumes no final
+# =============================================================
+
+# ---------- SERVIÇOS ----------
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager-config/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--log.level=warn'
+    restart: unless-stopped
+    networks:
+      - monitor_internal
+
+  alertmanager-bot:
+    image: metalmatze/alertmanager-bot:0.4.3
+    container_name: alertmanager-bot
+    environment:
+      - ALERTMANAGER_URL=http://alertmanager:9093
+      - LISTEN_ADDR=0.0.0.0:8080
+      - BOLT_PATH=/data/bot.db
+      - STORE=bolt
+      - TELEGRAM_ADMIN=8450507431
+      - TELEGRAM_TOKEN=8529096444:AAEozgVqNfPCHtIPxFOtpBEMAE9slKyxvzE
+    volumes:
+      - alertmanager_bot_data:/data
+    restart: unless-stopped
+    networks:
+      - monitor_internal
+    depends_on:
+      - alertmanager
+
+# ---------- VOLUMES (adicionar na seção volumes:) ----------
+
+  alertmanager_data:
+  alertmanager_bot_data:
