@@ -1,0 +1,139 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-rules:/etc/prometheus/rules
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'      # ← adicionar esta linha
+    restart: unless-stopped
+    networks:
+      - monitor_internal
+      - proxy
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped
+    networks:
+      - monitor_internal
+      - proxy
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    # Mantemos host mode pois ele precisa ler métricas do Kernel do host
+    network_mode: host
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitor_internal
+    # ADICIONE ESTA SEÇÃO DE COMMAND:
+    command:
+      - '-port=8080'
+      - '-listen_ip=0.0.0.0'
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    volumes:
+      - ./loki-config/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki   # adicione este
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitor_internal
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./loki-config/promtail-config.yaml:/etc/promtail/config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - promtail_data:/positions  #adicionar
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - monitor_internal
+    depends_on:
+      - loki
+#SISTEMA DE ALERTA
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    environment:
+      - TZ=America/Sao_Paulo        # ← adicionar esta linha
+    volumes:
+      - ./alertmanager-config/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--log.level=warn'
+    restart: unless-stopped
+    networks:
+      - monitor_internal
+
+  alertmanager-bot:
+    image: metalmatze/alertmanager-bot:0.4.3
+    container_name: alertmanager-bot
+    environment:
+      - ALERTMANAGER_URL=http://alertmanager:9093
+      - LISTEN_ADDR=0.0.0.0:8080
+      - BOLT_PATH=/data/bot.db
+      - STORE=bolt
+      - TELEGRAM_ADMIN=8450507431
+      - TELEGRAM_TOKEN=8529096444:AAEozgVqNfPCHtIPxFOtpBEMAE9slKyxvzE
+    volumes:
+      - alertmanager_bot_data:/data
+    restart: unless-stopped
+    networks:
+      - monitor_internal
+    depends_on:
+      - alertmanager
+
+
+networks:
+  monitor_internal:
+    driver: bridge
+  proxy:
+    external: true
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:   #adicione este
+  promtail_data:
+  alertmanager_data:
+  alertmanager_bot_data:

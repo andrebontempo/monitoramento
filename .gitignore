@@ -1,0 +1,8 @@
+.env
+*_data/
+*.old
+prometheus-data/
+grafana-data/
+loki-data/
+alertmanager-data/
+alertmanager-config/alertmanager.yml

@@ -1,0 +1,52 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'name']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'telegram'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'telegram'
+      repeat_interval: 1h
+    - match:
+        severity: warning
+      receiver: 'telegram'
+      repeat_interval: 4h
+
+receivers:
+  - name: 'telegram'
+    telegram_configs:
+      - bot_token: '8529096444:AAEozgVqNfPCHtIPxFOtpBEMAE9slKyxvzE'
+        chat_id: 8450507431
+        parse_mode: 'HTML'
+        send_resolved: true
+        message: |
+          {{ if eq .Status "firing" -}}
+          {{ if eq (index .Alerts 0).Labels.severity "critical" }}🔴 <b>ALERTA CRÍTICO</b>{{ else }}⚠️ <b>AVISO</b>{{ end }}
+          {{- else }}
+          ✅ <b>ALERTA RESOLVIDO</b>
+          {{- end }}
+          ━━━━━━━━━━━━━━━━━━━━━━━━
+
+          {{ range .Alerts -}}
+          🔔 <b>{{ .Labels.alertname }}</b>
+          {{ if .Labels.name -}}
+          📦 Container: <code>{{ .Labels.name }}</code>
+          {{ end -}}
+          📝 {{ .Annotations.description }}
+          ⏰ {{ if eq $.Status "firing" }}Disparado{{ else }}Resolvido{{ end }}: {{ if eq $.Status "firing" }}{{ .StartsAt.Format "02/01/2006 15:04:05" }}{{ else }}{{ .EndsAt.Format "02/01/2006 15:04:05" }}{{ end }}
+
+          {{ end -}}
+          ━━━━━━━━━━━━━━━━━━━━━━━━
+          🖥️ <i>VPS Hostinger</i>
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'name']

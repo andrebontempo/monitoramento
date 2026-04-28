@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s # Recomendo 15s para evitar gaps nos gráficos
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node-exporter'
+    static_configs:
+      # Use o IP do gateway do Docker no host ou o IP privado da VPS
+      # Evite IP público aqui para evitar problemas com firewall
+      - targets: ['172.17.0.1:9100']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      # Agora, como ambos estão na rede 'monitor_internal', 
+      # o DNS do Docker resolve o nome do container diretamente.
+      - targets: ['cadvisor:8080']
