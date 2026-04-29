@@ -90,12 +90,12 @@ services:
       - loki
 #SISTEMA DE ALERTA
   alertmanager:
-    image: prom/alertmanager:latest
+    image: prom/alertmanager:v0.25.0
     container_name: alertmanager
     environment:
-      - TZ=America/Sao_Paulo        # ← adicionar esta linha
+      - TZ=America/Sao_Paulo
     volumes:
-      - ./alertmanager-config/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./alerting/alertmanager.yml:/etc/alertmanager/alertmanager.yml
       - alertmanager_data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
