@@ -8,13 +8,15 @@ groups:
       # -------------------------------------------------------
       - alert: ContainerDown
         expr: |
-          (time() - container_last_seen{name!="", name!~".*POD.*", name!~".*pause.*"}) > 90
-        for: 2m
+          (time() - container_last_seen{name!="", name!~".*POD.*", name!~".*pause.*"}) > 60
+          or
+          (container_last_seen{name!="", name!~".*POD.*"} offset 2m unless container_last_seen)
+        for: 1m
         labels:
           severity: critical
         annotations:
           summary: "🔴 Container DOWN: {{ $labels.name }}"
-          description: "Container {{ $labels.name }} não é visto há mais de 2 minutos."
+          description: "O container {{ $labels.name }} parou ou não é visto há mais de 1 minuto."
 
       # -------------------------------------------------------
       # CPU alta por container (> 80% por 5 min)
