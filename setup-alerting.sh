@@ -154,8 +154,8 @@ cat << 'EOF'
       - LISTEN_ADDR=0.0.0.0:8080
       - BOLT_PATH=/data/bot.db
       - STORE=bolt
-      - TELEGRAM_ADMIN=8450507431
-      - TELEGRAM_TOKEN=8529096444:AAEozgVqNfPCHtIPxFOtpBEMAE9slKyxvzE
+      - TELEGRAM_ADMIN=${TELEGRAM_ADMIN}          # ← definido no .env
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}          # ← definido no .env
     volumes:
       - alertmanager_bot_data:/data
     restart: unless-stopped

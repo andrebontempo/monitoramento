@@ -1,8 +1,18 @@
+# Arquivos com credenciais reais — NUNCA commitar
 .env
+alerting/.env.alerting
+
+# Diretórios de dados persistentes
 *_data/
-*.old
 prometheus-data/
 grafana-data/
 loki-data/
 alertmanager-data/
+
+# Arquivos obsoletos
+*.old
+
+# Config gerada (usa alertmanager-config/ como backup/histórico)
 alertmanager-config/alertmanager.yml
+
+# O arquivo .env.example SIM deve ser commitado (não tem credenciais reais)

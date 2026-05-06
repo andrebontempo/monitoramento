@@ -20,8 +20,8 @@ route:
 receivers:
   - name: 'telegram'
     telegram_configs:
-      - bot_token: '8529096444:AAEozgVqNfPCHtIPxFOtpBEMAE9slKyxvzE'
-        chat_id: 8450507431
+      - bot_token: '${TELEGRAM_TOKEN}'   # ← lido do .env via docker-compose
+        chat_id: 0  # ← placeholder; quem envia de fato é o alertmanager-bot
         parse_mode: 'HTML'
         send_resolved: true
         message: |
