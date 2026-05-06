@@ -6,7 +6,12 @@
 # Cron: 0 3 * * 1 /opt/docker/monitoramento/trivy-scan.sh >> /var/log/trivy-scan.log 2>&1
 # =============================================================================
 
-LOKI_URL="http://172.19.0.2:3100/loki/api/v1/push"
+LOKI_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' loki 2>/dev/null | head -1)
+if [ -z "$LOKI_IP" ]; then
+  echo "Erro: container 'loki' não encontrado ou não está rodando."
+  exit 1
+fi
+LOKI_URL="http://${LOKI_IP}:3100/loki/api/v1/push"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
