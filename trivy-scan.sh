@@ -12,6 +12,7 @@ if [ -z "$LOKI_IP" ]; then
   exit 1
 fi
 LOKI_URL="http://${LOKI_IP}:3100/loki/api/v1/push"
+LOKI_READY_URL="http://${LOKI_IP}:3100/ready"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -21,6 +22,21 @@ NC='\033[0m'
 echo "=============================================="
 echo " Trivy CVE Scanner — $(date '+%Y-%m-%d %H:%M:%S')"
 echo "=============================================="
+
+# Aguardar Loki estar pronto antes de iniciar (evita perda silenciosa de dados)
+echo -e "${YELLOW}Verificando Loki...${NC}"
+for i in $(seq 1 12); do
+  if curl -sf "$LOKI_READY_URL" | grep -q "ready"; then
+    echo -e "${GREEN}✅ Loki pronto!${NC}"
+    break
+  fi
+  if [ "$i" -eq 12 ]; then
+    echo -e "${RED}❌ Loki não ficou pronto após 60s. Abortando.${NC}"
+    exit 1
+  fi
+  echo -e "   tentativa $i/12 — aguardando 5s... ($(curl -sf $LOKI_READY_URL || echo 'sem resposta'))"
+  sleep 5
+done
 
 # Verificar dependência jq
 if ! command -v jq &>/dev/null; then
