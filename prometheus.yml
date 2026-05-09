@@ -1,3 +1,4 @@
+# Configuração do Prometheus - Deploy automático ativado via Antigravity
 global:
   scrape_interval: 15s # Recomendo 15s para evitar gaps nos gráficos
 
