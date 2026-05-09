@@ -35,4 +35,3 @@ echo "✅ Limpeza concluída com sucesso!"
 echo "Espaço livre após a limpeza:"
 df -h / | grep '/'
 echo "==========================================="
-
