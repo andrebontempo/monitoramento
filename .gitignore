@@ -1,18 +1,30 @@
-# Arquivos com credenciais reais — NUNCA commitar
+# --- Credenciais e Segredos ---
 .env
 alerting/.env.alerting
+# Ignora qualquer outro arquivo .env que possa surgir
+**/.env
 
-# Diretórios de dados persistentes
+# --- Dados Persistentes (Volumes do Docker) ---
+# Garante que os dados dos bancos e dashboards não subam
 *_data/
 prometheus-data/
 grafana-data/
 loki-data/
 alertmanager-data/
+trivy-cache/
 
-# Arquivos obsoletos
+# --- Arquivos Temporários e Logs ---
+*.log
 *.old
+*.tmp
+teste.txt
 
-# Config gerada (usa alertmanager-config/ como backup/histórico)
+# --- Configurações Específicas ---
+# Ignora a config ativa do alertmanager (mantendo alertmanager-config/ como backup)
 alertmanager-config/alertmanager.yml
 
-# O arquivo .env.example SIM deve ser commitado (não tem credenciais reais)
+# --- Arquivos de Sistema/IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
