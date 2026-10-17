@@ -19,35 +19,9 @@ route:
 
 receivers:
   - name: 'telegram'
-    telegram_configs:
-      - bot_token: '${TELEGRAM_TOKEN}'   # ← lido do .env via docker-compose
-        chat_id: 0  # ← placeholder; quem envia de fato é o alertmanager-bot
-        parse_mode: 'HTML'
+    webhook_configs:
+      - url: 'http://alertmanager-bot:8080'
         send_resolved: true
-        message: |
-          {{ if eq .Status "firing" -}}
-          {{ if eq (index .Alerts 0).Labels.severity "critical" }}🔴 <b>ALERTA CRÍTICO</b>{{ else }}⚠️ <b>AVISO</b>{{ end }}
-          {{- else }}
-          ✅ <b>ALERTA RESOLVIDO</b>
-          {{- end }}
-          ━━━━━━━━━━━━━━━━━━━━━━━━
-
-          {{ range .Alerts -}}
-          🔔 <b>{{ .Labels.alertname }}</b>
-          {{ if .Labels.name -}}
-          📦 Container: <code>{{ .Labels.name }}</code>
-          {{ end -}}
-          {{ if eq $.Status "firing" -}}
-          📝 {{ .Annotations.description }}
-          ⏰ Disparado: {{ .StartsAt.Local.Format "02/01/2006 15:04:05" }} (BRT)
-          {{- else -}}
-          📝 {{ .Annotations.summary }} — retornou ao normal.
-          ⏰ Resolvido: {{ .EndsAt.Local.Format "02/01/2006 15:04:05" }} (BRT)
-          {{- end }}
-
-          {{ end -}}
-          ━━━━━━━━━━━━━━━━━━━━━━━━
-          🖥️ <i>VPS Hostinger</i>
 
 inhibit_rules:
   - source_match:

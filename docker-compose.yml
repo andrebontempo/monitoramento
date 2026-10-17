@@ -70,6 +70,7 @@ services:
   loki:
     image: grafana/loki:latest
     container_name: loki
+    restart: unless-stopped
     volumes:
       - ./loki-config/loki-config.yaml:/etc/loki/local-config.yaml
       - loki_data:/loki   # adicione este

@@ -134,7 +134,7 @@ A imagem `metalmatze/alertmanager-bot:0.4.3` (2019) tem pouca manutenção ativa
 | 🔴 Crítico | Token Telegram exposto | ✅ Corrigido |
 | 🟡 Importante | Tags `latest` em produção | ⏳ Pendente |
 | 🟡 Importante | Senha Grafana fraca | ✅ Migrada para .env (alterar valor) |
-| 🟡 Importante | `restart` faltando no Loki | ⏳ Pendente |
+| 🟡 Importante | `restart` faltando no Loki | ✅ Corrigido |
 | 🟡 Importante | IP fixo `172.17.0.1` frágil | ⏳ Pendente |
 | 🟢 Sugestão | Alertas adicionais | ⏳ Opcional |
 | 🟢 Sugestão | alertmanager-bot desatualizado | ⏳ Opcional |

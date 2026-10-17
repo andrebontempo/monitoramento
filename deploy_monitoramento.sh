@@ -28,12 +28,15 @@ chmod +x setup-alerting.sh
 chmod +x deploy_monitoramento.sh
 
 # 4. Atualizar Containers (Docker Compose)
+# O 'pull' garante que as imagens com tag latest sejam atualizadas
 # O '--remove-orphans' limpa containers antigos que saíram do arquivo compose
-echo -e "${GREEN}3. Atualizando containers...${NC}"
+echo -e "${GREEN}3. Baixando imagens atualizadas...${NC}"
+docker compose pull
+echo -e "${GREEN}4. Atualizando containers...${NC}"
 docker compose up -d --remove-orphans
 
 # 5. Recarregar Prometheus (para aplicar novas regras de alerta sem downtime)
-echo -e "${GREEN}4. Aguardando Prometheus ficar pronto...${NC}"
+echo -e "${GREEN}5. Aguardando Prometheus ficar pronto...${NC}"
 for i in $(seq 1 12); do
   if docker exec prometheus wget -q --spider http://localhost:9090/-/ready 2>/dev/null; then
     break
@@ -42,7 +45,7 @@ for i in $(seq 1 12); do
   sleep 5
 done
 
-echo -e "${GREEN}5. Recarregando regras do Prometheus...${NC}"
+echo -e "${GREEN}6. Recarregando regras do Prometheus...${NC}"
 if docker exec prometheus wget -qO- --post-data='' http://localhost:9090/-/reload > /dev/null 2>&1; then
   echo -e "${GREEN}   Regras recarregadas com sucesso!${NC}"
 else
