@@ -2,6 +2,7 @@
 # =============================================================================
 # deploy_monitoramento.sh — Automatização de atualização do stack
 # =============================================================================
+set -e
 
 # Configurações
 REPO_DIR="/opt/docker/monitoramento"
